@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+    <header>
+        <title>My first Leaflet Map.</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+        <script src="resources/leaflet.ajax.min.js"></script>
+        <style>
+            #header{
+                font-weight: bolder;
+                background-color: lightblue;
+                height: 70px;
+            }
+            #mapdiv{
+                height: 850px;
+                background-color: lightgray;
+            }
+            #side-panel{
+                height: 850px;
+                background-color: beige;
+            }
+            #footer{
+                height: 75px;
+                background-color: darkgrey;
+            }
+            h4{
+                font-family: Lucida Handwriting, cursive;
+                color: black;
+            }
+            .greece{
+                font-family: Lucida Handwriting, cursive;
+                margin-bottom: 10px;
+            }
+        </style>
+    </header>
+    <body>
+        <div id="header" class="col-md-12">
+            <h1 class="text-center" style="font-family: 'Lucida Handwriting', cursive;">Thessaloniki City Center</h1>
+        </div>
+        <div id="side_panel" class="col-md-2">
+            <h2 class="text-center" style="font-family: 'Lucida Handwriting', cursive;">Attractions</h2><br>
+            <button id="zoomToArist" class="form-control btn btn-primary" style="font-family: 'Lucida Handwriting', cursive;">Aristotelous Square</button><br><hr>
+            
+        </div>
+        <div id="mapdiv" class="col-md-10">
+        </div>
+        <div id="footer" class="col-md-12">
+            <h4 id="map_coords" class="text-center" style="font-family: Arial, Helvetica, sans-serif;"></h4>
+            <h4 class="text-center" style="font-family: Arial, Helvetica, sans-serif;">&copy; 2021 Stergios Papathanasiou</h4>
+        </div>
+        <script>
+            var mymap = L.map("mapdiv").setView([40.6343, 22.9439], 14);
+            var backgroundLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            });
+            mymap.addLayer(backgroundLayer);
+            
+            mymap.on("mousemove", function(e){
+                var str = "Latitude:"+e.latlng.lat.toFixed(5)+ " |" +" Longitude:"+e.latlng.lng.toFixed(5)+" |"+" Zoom Level:"+mymap.getZoom();
+                $("#map_coords").html(str);
+            });
+            
+            var marker = L.marker([40.63233, 22.94090]).addTo(mymap);
+            marker.bindPopup("<h4 class = 'text-center'>Aristotelous Square<hr><a href = 'https://en.wikipedia.org/wiki/Aristotelous_Square'><img src = 'img/aristotelous.jpg' width = '250px'></a></h4>")
+            
+            $("#zoomToArist").click(function(){
+                mymap.setView([40.63233, 22.94090], 18)
+            });
+            
+            var geojsonLayer = new L.GeoJSON.AJAX("data/attractions.geojson", {
+                pointToLayer: function(feature, latlng) {
+                    var str1 = "<button id = 'zoomTo"+feature.properties.name.replace(/ /g, '');
+                    str1 += "' class = 'form-control btn btn-primary greece'>";
+                    str1 += feature.properties.name+"</button>";
+                    $("#side_panel").append(str1);
+                    $("#zoomTo"+feature.properties.name.replace(/ /g, '')).click(function(){
+                        mymap.setView([latlng.lat, latlng.lng], 18);
+                    });
+                    
+                    var str = "<h4 class = 'text-center'>"+feature.properties.name+"</h4><hr>";
+                    str += "<a href= ' "+feature.properties.web_link+"'>";
+                    str += "<img src= 'img/"+feature.properties.image+"' width='250px'>";
+                    str += "</a>";
+                    return L.marker(latlng).bindPopup(str);
+            
+                }});
+            geojsonLayer.addTo(mymap);
+        </script>
+    </body>
+</html>
